@@ -1,0 +1,50 @@
+#/bin/sh 
+
+
+if [ "$1.$2" != "." ] ; then 
+
+
+if [ "$1" == "-l" ] ; then
+	for n in 101 102 103 104 105 106 107 108 109 110 111; do echo "$n - $(kankun $n 2>/dev/null)" ; done
+	exit
+fi
+
+cmd="state"
+if [ "$2" != "" ] ; then
+	cmd=$2
+fi
+
+ip=$1
+
+[ $(echo $1 | sed 's/\./\n/g' | wc -l) -lt 4 ] && ip=20.0.0.$ip
+
+#echo $ip
+#echo curl "http:/$1/cgi-bin/relay.cgi?$cmd"
+#curl "http:/$ip/cgi-bin/relay.cgi?$cmd"
+
+
+if [ "$cmd" != "restart" ] ; then
+        curl "http:/$ip/cgi-bin/relay.cgi?$cmd"
+else
+        curl "http:/$ip/cgi-bin/relay.cgi?off"
+        sleep 10
+        curl "http:/$ip/cgi-bin/relay.cgi?on"
+        curl "http:/$ip/cgi-bin/relay.cgi"
+fi
+
+else
+
+        echo '    kankun <number>  # just show if its on or off! '
+        echo '    kankun <number> on/off/restart'
+        echo '    kankun -l # list'
+        echo ''
+        echo ''
+        echo "kankun 101 restart newfarm 001"
+        echo "kankun 102 restart newfarm 002"
+        echo "kankun 103 restart newfarm 003"
+        echo '...'
+        echo "kankun 110 restart newfarm 010"
+
+
+
+fi

@@ -1,0 +1,95 @@
+#!/bin/bash
+
+pwd=$(dirname $BASH_SOURCE)
+
+subnet=145
+
+
+startWifi(){
+	sudo netctl start wlp0s26f7u1.static
+	sudo systemctl start hostapd.service 
+}
+stopWifi(){
+	sudo systemctl stop hostapd.service 
+	sudo netctl stop  wlp0s26f7u1.static
+}
+
+
+setup(){
+	sudo cp 0K_SP3_v1  /etc/netctl/wlp0s26f7u1-0K_SP3
+	sudo netctl start wlp0s26f7u1-0K_SP3 || ( sudo cp 0K_SP3_v2  /etc/netctl/wlp0s26f7u1-0K_SP3 ; sudo netctl start wlp0s26f7u1-0K_SP3 )
+	
+	sleep 15
+	iwconfig 2>&1 | grep ^w -A 4
+	ifconfig 2>&1 | grep ^w -A7
+
+	subnet=$(ifconfig | grep ^w -A7 | grep 'inet ' | awk  -F'.' '{print $2}')
+	subnet=$(ifconfig | grep ^w -A7 | grep 'inet ' | awk '{print $2}' | awk  -F'.' '{print $1"."$2"."$3}')
+
+	echo $subnet
+	
+	
+	if [ "$subnet" != "" ] ; then
+		sudo rm $pwd/etc/config/network
+		sudo rm $pwd/rc.local.tmp
+
+		cat $pwd/etc/config/network.template | sed "s/20.0.0.100/20.0.0.$1/" | sed "s/192.168.10.253/$subnet.253/" > $pwd/etc/config/network
+
+		#scp -r $pwd/etc/* root@192.168.10.253:/etc/
+		#scp -r $pwd/www/* root@192.168.10.253:/www/
+		scp -r $pwd/etc/* root@$subnet.253:/etc/
+		scp -r $pwd/www/* root@$subnet.253:/www/
+		scp -r $pwd/usr/* root@$subnet.253:/usr/	
+		scp -r $pwd/root/* root@$subnet.253:/root/	
+
+		ssh root@$subnet.253 cat /etc/rc.local | grep -v uhttpd |  sed 's/exit/\/usr\/sbin\/uhttpd -f -h \/www -r koven -x \/cgi-bin -t 60 -T 30 -k 20 -n 3 -N 100 -R -p 0.0.0.0:80 \&\nQUERY_STRING=on /www/cgi-bin/relay.cgi          \nexit /' > $pwd/rc.local.tmp
+		scp -r $pwd/rc.local.tmp root@$subnet.253:/etc/rc.local
+
+		#ssh root@$subnet.253 reboot 
+		ssh root@$subnet.253 "sh -c \"echo -e '0 0 * * *  /bin/reboot\n*/15 * * * *  /root/scripts/wifi\n\n' > /etc/crontabs/root ; crontab -l; reboot\""
+	else
+		echo -e "\n\nERROR: Cant find 0K_SP3 wifi. Reset a TOMADA! \n\n"
+	fi
+	sudo netctl stop  wlp0s26f7u1-0K_SP3
+}
+
+
+
+if [ "$1" = "" ] ; then
+	echo ''
+	echo parametro que especifica o final do ip da tomada faltando
+	echo 'ex: configTomada 101 -> seta a tomada pra 20.0.0.101'
+	echo ''
+	echo 'ou restartWIFI pra restartar a conexao com as tomadas ja configuradas.'
+	echo ''
+		echo "
+
+			use stop pra parar o wifi server ou restart pra restartar!!
+		"
+
+	echo WIFI disponiveis:
+	sudo systemctl stop hostapd.service 
+	sudo netctl stop wlp0s26f7u1-0K_SP3
+	sudo netctl restart  wlp0s26f7u1.static
+	sudo iwlist wlp0s26f7u1 scanning | grep ESS
+	sudo systemctl start hostapd.service 
+	echo .	
+else
+	if [ "$1" = "restart" ] ; then
+		stopWifi
+		startWifi
+	elif [ "$1" = "stop" ] ; then
+		stopWifi
+	else
+		echo .
+		echo "Senha e' p9z34c"
+		echo .
+
+
+		stopWifi
+		setup $1
+		startWifi
+
+		ifconfig 2>&1 | grep ^w -A7
+	fi
+fi

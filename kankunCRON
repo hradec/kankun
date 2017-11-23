@@ -1,0 +1,115 @@
+#!/bin/python2
+
+
+import os, time, sys
+sys.path.append('/atomo/pipeline/tools/python')
+import pipe
+
+cgru = pipe.apps.cgru()
+cgru.expand()
+
+import af
+
+
+restartCheckPeriod = 20 # check if a machine is down every number of minutes
+offCheckPeriod = 15 # wait this minutes after jobs done before shut off machines. If new job comes in, it resets the counter
+
+# mapping of kankun plugs IP addresses and newfarm numbers
+kankun = {
+	 1: 100,
+	 2: 102,
+	 3: 101,
+	 4: 102,
+	 5: 101,
+	 6: 102,
+	 7: 100,
+	 8: 100,
+	 9: 102,
+	10: 101,
+}
+
+# return true if all plugs are on the request state
+# if not, it sets the plug to the requested state and returns false
+def allPlugs(action='off'):
+	ret = True
+	plugs = {}
+	for k in kankun:
+		plugs[ kankun[k] ]=1
+	
+	for plug in plugs:
+		if plug:
+			state = ''.join(os.popen('kankun %s 2>/dev/null' % plug).readlines()).strip()
+			if state.strip() and state != action.upper():
+				cmd = 'kankun %s %s' % (plug, action)
+				print cmd
+				ret=False
+				os.system(cmd)
+	return ret
+
+
+#print '\n'.join([ str(x['blocks']) for x in af.Cmd().getJobList(False) if x.has_key('state') and x['id']==309 ])
+print '-'*160
+runningJobs = [ x for x in af.Cmd().getJobList(False) if x.has_key('state') and ('RUN' in x['state'] or x['state']==' RDY') ]
+for r in runningJobs:
+	print "name: %s | state: %s | st: %s | id: %s | username: %s" % (r['name'], r['state'], r['st'], r['id'], r['user_name'])
+print '-'*160
+
+restartCheck = range(0,60,restartCheckPeriod) 
+
+
+if not  runningJobs:
+     timer=True
+     if os.path.exists('/tmp/.kankunOffCount'):
+      f=open('/tmp/.kankunOffCount','r')
+      count=len(''.join(f.readlines())) 
+      f.close()
+      print count
+      if count > offCheckPeriod:
+	#os.system("runuser rhradec googlefarm.sh deleteAll")
+	allPlugs('off')
+        timer=False
+     if timer:
+     	f=open('/tmp/.kankunOffCount','a')
+     	f.write('1')
+     	f.close()
+
+else:
+   #os.system("runuser rhradec googlefarm.sh keepAlive")
+   if allPlugs('on'):
+     print 'All plugs are ON, so all machines should be up!'
+
+
+     open('/tmp/.kankunOffCount','w').close()
+     print int(time.localtime().tm_min), restartCheck
+     if int(time.localtime().tm_min) in restartCheck:
+
+	# use avahi to find what newfarm machines are down
+	numbers = []
+	for line in os.popen("avahi-browse -at 2>&1 | grep Workstation | grep newfarm").readlines():
+		machine = [ x for x in line.split(' ') if 'newfarm' in x ]
+		if not machine:
+			continue
+		numbers += [ int(''.join([ x for x in machine[0] if x.isdigit() ])) ]
+
+	numbers.sort()
+
+	missing = []
+	for each in numbers: #[x for x in range(1,numbers[-1]+1) if x not in numbers]:
+		if not os.popen("ping -c 1 -W 1 newfarm-%03d.local 2>&1 | grep ' 0%%' " % each).readlines():
+			print each
+			missing += [each]
+	missing.sort()
+
+	# find what plus to restart
+	kankunToRestart = {}
+	for each in missing:
+		kankunToRestart[ kankun[each] ] = 1
+		print 'missing newfarm-%03d' % each
+
+
+	# restart plugs
+	for plug in kankunToRestart:
+		if plug:
+			cmd='kankun  %s  restart' % plug 
+			print cmd
+			os.system(cmd)

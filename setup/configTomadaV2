@@ -1,0 +1,107 @@
+#!/bin/bash
+
+pwd=$(dirname $BASH_SOURCE)
+
+subnet=145
+
+
+startWifi(){
+	sudo cp ./WIFI.atomoVivo /etc/netctl/
+	sudo netctl start WIFI.atomoVivo
+#	sudo systemctl start hostapd.service 
+}
+stopWifi(){
+	sudo systemctl stop hostapd.service 
+	sudo netctl stop WIFI.atomoVivo
+	sudo netctl stop WIFI.atomo
+	ifconfig | grep '^w' | awk -F':' '{print $1}' | while read n ; do sudo ifconfig $n 0.0.0.0 down ; done
+}
+
+
+setup(){
+	wifi=$1
+	ip=$2
+
+	sudo cp 0K_SP3_v1  /etc/netctl/wlp0s26f7u1-0K_SP3
+	sudo netctl start wlp0s26f7u1-0K_SP3 || ( sudo cp 0K_SP3_v2  /etc/netctl/wlp0s26f7u1-0K_SP3 ; sudo netctl start wlp0s26f7u1-0K_SP3 || ( echo "ERROR: No 0K_SP3 wifi found!" ; exit ) )
+	
+	sleep 15
+	iwconfig 2>&1 | grep ^w -A 4
+	ifconfig 2>&1 | grep ^w -A7
+
+	subnet=$(ifconfig | grep ^w -A7 | grep 'inet ' | awk  -F'.' '{print $2}')
+	subnet=$(ifconfig | grep ^w -A7 | grep 'inet ' | awk '{print $2}' | awk  -F'.' '{print $1"."$2"."$3}')
+
+	echo $subnet
+	
+	
+	if [ "$subnet" != "" ] ; then
+		sudo rm $pwd/etc/config/network
+		sudo rm $pwd/rc.local.tmp
+
+		cat $pwd/etc/config/network.template | sed "s/20.0.0.100/$ip/" | grep -v gateway | sed "s/192.168.10.253/$subnet.253/" > $pwd/etc/config/network.$wifi
+
+		#scp -r $pwd/etc/* root@192.168.10.253:/etc/
+		#scp -r $pwd/www/* root@192.168.10.253:/www/
+		scp -r $pwd/etc/* root@$subnet.253:/etc/
+		scp -r $pwd/www/* root@$subnet.253:/www/
+		scp -r $pwd/usr/* root@$subnet.253:/usr/
+		scp -r $pwd/root/* root@$subnet.253:/root/
+		scp -r $pwd/bin/* root@$subnet.253:/bin/
+
+		ssh root@$subnet.253 cat /etc/rc.local | grep -v uhttpd |  sed 's/exit/\/usr\/sbin\/uhttpd -f -h \/www -r koven -x \/cgi-bin -t 60 -T 30 -k 20 -n 3 -N 100 -R -p 0.0.0.0:80 \&\nQUERY_STRING=on \/www\/cgi-bin\/relay.cgi\nexit /' > $pwd/rc.local.tmp
+		scp -r $pwd/rc.local.tmp root@$subnet.253:/etc/rc.local
+		ssh root@$subnet.253 cp /etc/config/wireless.$wifi /etc/config/wireless
+		if [ "$ip" == "" ] ; then 
+			ssh root@$subnet.253 cp /etc/config/network.template.dhcp /etc/config/network
+		else
+			ssh root@$subnet.253 cp /etc/config/network.$wifi /etc/config/network
+		fi
+		ssh root@$subnet.253 opkg install /root/avahi-daemon_0.6.31-6_ar71xx.ipk
+
+		#ssh root@$subnet.253 reboot 
+		ssh root@$subnet.253 "sh -c \"echo -e '0 0 * * *  /bin/reboot\n*/15 * * * *  /root/scripts/wifi\n\n' > /etc/crontabs/root ; crontab -l; reboot\""
+	else
+		echo -e "\n\nERROR: Cant find 0K_SP3 wifi. Reset a TOMADA! \n\n"
+	fi
+	sudo netctl stop  wlp0s26f7u1-0K_SP3
+}
+
+
+
+if [ "$1" = "" ] ; then
+	echo -e "\n$(basename $0) - configura uma tomada KANKUN pros nossos WIFIs na Atomo.\n\n"
+	echo "	$(basename $0) atomoVivo -> seta a tomada pro atomoVivi wifi, usado ip dinamico"
+	echo "	$(basename $0) atomoVivo 192.168.200.101 -> seta a tomada pro atomoVivi wifi, com ip fixo 192.168.200.101"
+	echo ''
+	echo 'ou restart pra restartar a conexao com as tomadas ja configuradas'
+	echo 'ou stop pra desligar o wifi.'
+	echo ''
+	echo WIFI disponiveis:
+#	stopWifi
+	startWifi
+	sudo iwlist wlp0s26f7u1 scanning | grep ESS
+	echo -e "\n\nWIFI Configs que podemos usar:\n"
+	ls -1 $(dirname $(readlink -f $0))/WIFI.* | sed 's/WIFI.//g' | awk -F'/' '{print "\t"$(NF)}' | while read l ; do
+		echo -e "\t$l"
+	done
+	echo -e "\n\n"
+else
+	if [ "$1" = "restart" ] ; then
+		stopWifi
+		startWifi
+	elif [ "$1" = "stop" ] ; then
+		stopWifi
+	else
+		echo .
+		echo "Senha e' p9z34c"
+		echo .
+
+
+		stopWifi
+		setup $1 $2
+		startWifi
+
+		ifconfig 2>&1 | grep ^w -A7
+	fi
+fi

@@ -1,0 +1,7 @@
+Description='Automatically generated profile by wifi-menu'
+Interface=wlp0s26f7u1
+Connection=wireless
+Security=none
+ESSID=0K_SP3
+IP=dhcp
+
