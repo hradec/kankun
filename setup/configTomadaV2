@@ -39,7 +39,7 @@ setup(){
 		sudo rm $pwd/etc/config/network
 		sudo rm $pwd/rc.local.tmp
 
-		cat $pwd/etc/config/network.template | sed "s/20.0.0.100/$ip/" | grep -v gateway | sed "s/192.168.10.253/$subnet.253/" > $pwd/etc/config/network.$wifi
+		cat $pwd/etc/config/network.template | sed "s/20.0.0.100/$ip/" | sed "s/20.0.0.1/$ip/" | sed "s/192.168.10.253/$subnet.253/" > $pwd/etc/config/network.$wifi
 
 		#scp -r $pwd/etc/* root@192.168.10.253:/etc/
 		#scp -r $pwd/www/* root@192.168.10.253:/www/
@@ -60,7 +60,7 @@ setup(){
 		ssh root@$subnet.253 opkg install /root/avahi-daemon_0.6.31-6_ar71xx.ipk
 
 		#ssh root@$subnet.253 reboot 
-		ssh root@$subnet.253 "sh -c \"echo -e '0 0 * * *  /bin/reboot\n*/15 * * * *  /root/scripts/wifi\n\n' > /etc/crontabs/root ; crontab -l; reboot\""
+		ssh root@$subnet.253 "sh -c \"echo -e '0 0 * * *  /bin/reboot\n*/15 * * * *  /root/scripts/wifi\n\n' > /etc/crontabs/root ; crontab -l; rrrreboot\""
 	else
 		echo -e "\n\nERROR: Cant find 0K_SP3 wifi. Reset a TOMADA! \n\n"
 	fi
