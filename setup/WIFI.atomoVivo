@@ -3,9 +3,9 @@ Interface=wlp0s26f7u1
 Connection=wireless
 Security=wpa
 ESSID=atomoVivo
-#IP=dhcp
+IP=dhcp
 Key=atomo2009
 
-IP=static
-Address=('192.168.200.253/24')
+#IP=static
+#Address=('192.168.200.253/24')
 

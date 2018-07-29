@@ -5,16 +5,34 @@ pwd=$(dirname $BASH_SOURCE)
 subnet=145
 
 
+
 startWifi(){
-	sudo cp ./WIFI.atomoVivo /etc/netctl/
-	sudo netctl start WIFI.atomoVivo
-#	sudo systemctl start hostapd.service 
+#	if [ "$(sudo netctl is-active wlp0s26f7u1.static | grep ^active)" == "" ] ; then 
+#	        sudo netctl start wlp0s26f7u1.static
+#        fi
+        sudo netctl start wlp0s26f7u1.static
+	sudo systemctl start hostapd.service 
 }
 stopWifi(){
+        sudo systemctl stop hostapd.service 
+        sudo netctl stop  wlp0s26f7u1.static
+}
+
+
+startWifi2(){
+	sudo cp ./WIFI.atomoVivo /etc/netctl/
+	sudo netctl start WIFI.atomoVivo
+#	sudo netctl start wlp0s26f7u1.static
+#	sudo systemctl start hostapd.service 
+}
+stopWifi2(){
 	sudo systemctl stop hostapd.service 
 	sudo netctl stop WIFI.atomoVivo
 	sudo netctl stop WIFI.atomo
+	sudo netctl stop wlp0s26f7u1.static
 	ifconfig | grep '^w' | awk -F':' '{print $1}' | while read n ; do sudo ifconfig $n 0.0.0.0 down ; done
+#	sudo pkill -fc -9 dhcpcd.*wlp0s26f7u 1>/dev/null
+#	sudo rm -rf  /run/dhcpcd-wlp0s26f7u* 1>/dev/null
 }
 
 
@@ -48,8 +66,9 @@ setup(){
 		scp -r $pwd/usr/* root@$subnet.253:/usr/
 		scp -r $pwd/root/* root@$subnet.253:/root/
 		scp -r $pwd/bin/* root@$subnet.253:/bin/
+		scp -r $pwd/www_cgi-bin/* root@$subnet.253:/www/cgi-bin/
 
-		ssh root@$subnet.253 cat /etc/rc.local | grep -v uhttpd |  sed 's/exit/\/usr\/sbin\/uhttpd -f -h \/www -r koven -x \/cgi-bin -t 60 -T 30 -k 20 -n 3 -N 100 -R -p 0.0.0.0:80 \&\nQUERY_STRING=on \/www\/cgi-bin\/relay.cgi\nexit /' > $pwd/rc.local.tmp
+		ssh root@$subnet.253 cat /etc/rc.local | grep -v uhttpd | grep -v kkeps_ | sed 's/exit/\/usr\/sbin\/uhttpd -f -h \/www -r koven -x \/cgi-bin -t 60 -T 30 -k 20 -n 3 -N 100 -R -p 0.0.0.0:80 \&\nQUERY_STRING=on \/www\/cgi-bin\/relay.cgi\nexit /' > $pwd/rc.local.tmp
 		scp -r $pwd/rc.local.tmp root@$subnet.253:/etc/rc.local
 		ssh root@$subnet.253 cp /etc/config/wireless.$wifi /etc/config/wireless
 		if [ "$ip" == "" ] ; then 
@@ -60,7 +79,7 @@ setup(){
 		ssh root@$subnet.253 opkg install /root/avahi-daemon_0.6.31-6_ar71xx.ipk
 
 		#ssh root@$subnet.253 reboot 
-		ssh root@$subnet.253 "sh -c \"echo -e '0 0 * * *  /bin/reboot\n*/15 * * * *  /root/scripts/wifi\n\n' > /etc/crontabs/root ; crontab -l; rrrreboot\""
+		ssh root@$subnet.253 "sh -c \"echo -e '0 0 * * *  /bin/reboot\n*/15 * * * *  /root/scripts/wifi\n\n' > /etc/crontabs/root ; crontab -l; reboot\""
 	else
 		echo -e "\n\nERROR: Cant find 0K_SP3 wifi. Reset a TOMADA! \n\n"
 	fi
@@ -78,14 +97,15 @@ if [ "$1" = "" ] ; then
 	echo 'ou stop pra desligar o wifi.'
 	echo ''
 	echo WIFI disponiveis:
-#	stopWifi
-	startWifi
+	stopWifi2
+	startWifi2
 	sudo iwlist wlp0s26f7u1 scanning | grep ESS
 	echo -e "\n\nWIFI Configs que podemos usar:\n"
 	ls -1 $(dirname $(readlink -f $0))/WIFI.* | sed 's/WIFI.//g' | awk -F'/' '{print "\t"$(NF)}' | while read l ; do
 		echo -e "\t$l"
 	done
 	echo -e "\n\n"
+	stopWifi2 && startWifi &
 else
 	if [ "$1" = "restart" ] ; then
 		stopWifi

@@ -37,16 +37,20 @@ setup(){
 
 		#scp -r $pwd/etc/* root@192.168.10.253:/etc/
 		#scp -r $pwd/www/* root@192.168.10.253:/www/
+		scp -r $pwd/bin/wifi* root@$subnet.253:/bin/
 		scp -r $pwd/etc/* root@$subnet.253:/etc/
 		scp -r $pwd/www/* root@$subnet.253:/www/
 		scp -r $pwd/usr/* root@$subnet.253:/usr/	
 		scp -r $pwd/root/* root@$subnet.253:/root/	
 
-		ssh root@$subnet.253 cat /etc/rc.local | grep -v uhttpd |  sed 's/exit/\/usr\/sbin\/uhttpd -f -h \/www -r koven -x \/cgi-bin -t 60 -T 30 -k 20 -n 3 -N 100 -R -p 0.0.0.0:80 \&\nQUERY_STRING=on /www/cgi-bin/relay.cgi          \nexit /' > $pwd/rc.local.tmp
+		ssh  root@$subnet.253  "ln -s /bin/wifiWatchdog /etc/rc.d/S99wifiWatchdog"
+
+		ssh root@$subnet.253 cat /etc/rc.local | grep -v uhttpd |  sed 's/exit/\/usr\/sbin\/uhttpd -f -h \/www -r koven -x \/cgi-bin -t 60 -T 30 -k 20 -n 3 -N 100 -R -p 0.0.0.0:80 \&\nQUERY_STRING=on \/www\/cgi-bin\/relay.cgi          \nexit /' > $pwd/rc.local.tmp
 		scp -r $pwd/rc.local.tmp root@$subnet.253:/etc/rc.local
 
 		#ssh root@$subnet.253 reboot 
 		ssh root@$subnet.253 "sh -c \"echo -e '0 0 * * *  /bin/reboot\n*/15 * * * *  /root/scripts/wifi\n\n' > /etc/crontabs/root ; crontab -l; reboot\""
+		scp  www_cgi-bin/relay.cgi root@$subnet.253:/www/cgi-bin/
 	else
 		echo -e "\n\nERROR: Cant find 0K_SP3 wifi. Reset a TOMADA! \n\n"
 	fi

@@ -1,11 +1,15 @@
 #/bin/sh 
 
+subnet=192.168.1
+
+
+ownIP=$(ifconfig | grep $subnet | awk '{print $2}')
 
 if [ "$1.$2" != "." ] ; then 
 
 
 if [ "$1" == "-l" ] ; then
-	for n in 101 102 103 104 105 106 107 108 109 110 111; do echo "$n - $(kankun $n 2>/dev/null)" ; done
+	for n in $(nmap -n -p80 $subnet.0/24 -oG - | grep 80/open | grep -v $ownIP | awk '{print $2}' | grep -v '\.1$' | awk -F'.' '{print $(NF)}'); do echo "$n - $($0 $n 2>/dev/null)" ; done
 	exit
 fi
 
@@ -14,9 +18,8 @@ if [ "$2" != "" ] ; then
 	cmd=$2
 fi
 
-ip=$1
 
-[ $(echo $1 | sed 's/\./\n/g' | wc -l) -lt 4 ] && ip=20.0.0.$ip
+[ $(echo $1 | sed 's/\./\n/g' | wc -l) -lt 4 ] && ip=$subnet.$1
 
 #echo $ip
 #echo curl "http:/$1/cgi-bin/relay.cgi?$cmd"
