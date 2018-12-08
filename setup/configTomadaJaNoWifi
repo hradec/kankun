@@ -1,0 +1,20 @@
+#!/bin/bash
+
+CD=$(dirname $BASH_SOURCE)
+cd $CD
+
+ip=$1
+
+                echo .
+                echo "Senha e' p9z34c"
+                echo .
+
+
+
+echo scp  $CD/etc/dropbear/authorized_keys root@$ip:/etc/dropbear/authorized_keys
+
+scp  $CD/etc/dropbear/authorized_keys root@$ip:/etc/dropbear/authorized_keys
+
+ssh root@$ip mkdir -p /www/cgi-bin/
+scp $CD/www_cgi-bin/relay.cgi root@$ip:/www/cgi-bin/relay.cgi
+ssh root@$ip chmod a+x /www/cgi-bin/relay.cgi

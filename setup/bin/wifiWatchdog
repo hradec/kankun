@@ -1,0 +1,12 @@
+#!/bin/ash
+
+watchdog() {
+  while true; do
+	/bin/wifiCheck || true
+	sleep 30
+  done
+}
+
+watchdog &
+
+

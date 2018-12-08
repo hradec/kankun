@@ -1,0 +1,51 @@
+#/bin/sh 
+
+
+if [ "$1.$2" != "." ] ; then 
+
+ipBase=$(ifconfig $(iwconfig 2>&1 | grep SSID | awk '{print $1}') | grep 'inet ' | awk '{print $2}' | awk -F'.' '{print $1"."$2"."$3}')
+
+if [ "$1" == "-l" ] ; then
+	seq=$(nmap -sn -v $ipBase.0/24 | grep 'Host is up ' -B1 | grep Nmap | awk '{print $(NF)}') 
+	for n in $seq ; do res=$(kankun $n 2>/dev/null) ; [ "$res" == "" ] && res="Not a Kankun" ; echo "$n - $res" ; done
+	exit
+fi
+
+ip=$1
+[ $(echo $1 | sed 's/\./\n/g' | wc -l) -lt 4 ] && ip=$ipBase.$ip
+
+cmd="state"
+if [ "$2" != "" ] ; then
+	cmd=$2
+fi
+
+#echo $ip
+#echo curl "http:/$1/cgi-bin/relay.cgi?$cmd"
+#curl "http:/$ip/cgi-bin/relay.cgi?$cmd"
+
+
+if [ "$cmd" != "restart" ] ; then
+        curl "http:/$ip/cgi-bin/relay.cgi?$cmd"  2>/dev/null | egrep -v '<|>|^ |,|^$'
+else
+        curl "http:/$ip/cgi-bin/relay.cgi?off"
+        sleep 10
+        curl "http:/$ip/cgi-bin/relay.cgi?on"
+        curl "http:/$ip/cgi-bin/relay.cgi"
+fi
+
+else
+
+        echo '    kankun <number>  # just show if its on or off! '
+        echo '    kankun <number> on/off/restart'
+        echo '    kankun -l # list'
+        echo ''
+        echo ''
+        echo "kankun 101 restart newfarm 001"
+        echo "kankun 102 restart newfarm 002"
+        echo "kankun 103 restart newfarm 003"
+        echo '...'
+        echo "kankun 110 restart newfarm 010"
+
+
+
+fi

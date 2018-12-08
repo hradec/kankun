@@ -1,0 +1,15 @@
+#!/bin/sh
+
+SERVER=192.168.1.1
+
+
+ping -c 3 $SERVER > /dev/null 2>&1
+if [ $? -ne 0 ]
+then
+  echo "No connection found"
+ 
+  reboot
+else
+  echo "Connection found"
+fi
+
