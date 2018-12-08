@@ -3,6 +3,9 @@
 
 import os, time, sys
 sys.path.append('/atomo/pipeline/tools/python')
+
+#sys.exit(0)
+
 import pipe
 
 cgru = pipe.apps.cgru()
@@ -14,19 +17,15 @@ import af
 restartCheckPeriod = 20 # check if a machine is down every number of minutes
 offCheckPeriod = 15 # wait this minutes after jobs done before shut off machines. If new job comes in, it resets the counter
 
-# mapping of kankun plugs IP addresses and newfarm numbers
-kankun = {
-	 1: 100,
-	 2: 102,
-	 3: 101,
-	 4: 102,
-	 5: 101,
-	 6: 102,
-	 7: 100,
-	 8: 100,
-	 9: 102,
-	10: 101,
-}
+# we now use 'kankun -l' command to map the list of newfarm machines to the proper ac ip!
+# so we just need to make sure the kankun command is up2date with the newfarm mapping!
+kankun={}
+for l in os.popen('kankun -l | grep farm').readlines():
+	ip=l.split()[0].split('.')[-1]
+	for newfarm in [ int(x.split('-')[-1]) for x in l.split() if 'farm' in x]:
+		kankun[newfarm] = ip
+
+
 
 # return true if all plugs are on the request state
 # if not, it sets the plug to the requested state and returns false

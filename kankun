@@ -1,25 +1,39 @@
 #/bin/sh 
 
-subnet=192.168.1
+m="
+      newfarm-001 104
+      newfarm-002 101
+      newfarm-003 104
+      newfarm-004 
+      newfarm-005 104
+      newfarm-006 
+      newfarm-007 106
+      newfarm-008 103
+      newfarm-009 107
+      newfarm-010 105
+      internet 102
+      centos 108
+"
 
 
-ownIP=$(ifconfig | grep $subnet | awk '{print $2}')
 
 if [ "$1.$2" != "." ] ; then 
 
+ipBase=$(ifconfig $(iwconfig 2>&1 | grep SSID | awk '{print $1}') | grep 'inet ' | awk '{print $2}' | awk -F'.' '{print $1"."$2"."$3}')
 
 if [ "$1" == "-l" ] ; then
-	for n in $(nmap -n -p80 $subnet.0/24 -oG - | grep 80/open | grep -v $ownIP | awk '{print $2}' | grep -v '\.1$' | awk -F'.' '{print $(NF)}'); do echo "$n - $($0 $n 2>/dev/null)" ; done
+	seq=$(nmap -sn -v $ipBase.0/24 | grep 'Host is up ' -B1 | grep Nmap | awk '{print $(NF)}') 
+	for n in $seq ; do res=$(kankun $n 2>/dev/null) ; [ "$res" == "" ] && echo "$n - Not a Kankun" || echo "$n - $res - $( echo  $(echo "$m" | grep $(echo $n | awk -F'.' '{print $(NF)}') | awk '{print $1}') )" ; done
 	exit
 fi
+
+ip=$1
+[ $(echo $1 | sed 's/\./\n/g' | wc -l) -lt 4 ] && ip=$ipBase.$ip
 
 cmd="state"
 if [ "$2" != "" ] ; then
 	cmd=$2
 fi
-
-
-[ $(echo $1 | sed 's/\./\n/g' | wc -l) -lt 4 ] && ip=$subnet.$1
 
 #echo $ip
 #echo curl "http:/$1/cgi-bin/relay.cgi?$cmd"
@@ -27,10 +41,10 @@ fi
 
 
 if [ "$cmd" != "restart" ] ; then
-        curl "http:/$ip/cgi-bin/relay.cgi?$cmd"
+        curl "http:/$ip/cgi-bin/relay.cgi?$cmd"  2>/dev/null | egrep -v '<|>|^ |,|^$'
 else
         curl "http:/$ip/cgi-bin/relay.cgi?off"
-        sleep 10
+        sleep 20
         curl "http:/$ip/cgi-bin/relay.cgi?on"
         curl "http:/$ip/cgi-bin/relay.cgi"
 fi
