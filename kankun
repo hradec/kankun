@@ -4,7 +4,7 @@ m="
       newfarm-001 104
       newfarm-002 101
       newfarm-003 104
-      newfarm-004 
+      newfarm-004 104
       newfarm-005 104
       newfarm-006 
       newfarm-007 106
@@ -21,9 +21,20 @@ if [ "$1.$2" != "." ] ; then
 
 ipBase=$(ifconfig $(iwconfig 2>&1 | grep SSID | awk '{print $1}') | grep 'inet ' | awk '{print $2}' | awk -F'.' '{print $1"."$2"."$3}')
 
-if [ "$1" == "-l" ] ; then
+
+list(){
 	seq=$(nmap -sn -v $ipBase.0/24 | grep 'Host is up ' -B1 | grep Nmap | awk '{print $(NF)}') 
 	for n in $seq ; do res=$(kankun $n 2>/dev/null) ; [ "$res" == "" ] && echo "$n - Not a Kankun" || echo "$n - $res - $( echo  $(echo "$m" | grep $(echo $n | awk -F'.' '{print $(NF)}') | awk '{print $1}') )" ; done
+}
+
+if [ "$1" == "-l" ] ; then
+	list
+	exit
+fi
+if [ "$1" == "farm_restart" ] ; then
+	for n in $(echo "$(list)" | grep farm | awk '{print $1}') ; do
+		kankun $n restart &
+	done
 	exit
 fi
 
@@ -54,6 +65,7 @@ else
         echo '    kankun <number>  # just show if its on or off! '
         echo '    kankun <number> on/off/restart'
         echo '    kankun -l # list'
+	echo '    kankun farm_restart  #  restart farm machines'
         echo ''
         echo ''
         echo "kankun 101 restart newfarm 001"

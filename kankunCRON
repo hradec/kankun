@@ -84,12 +84,14 @@ else:
 
 	# use avahi to find what newfarm machines are down
 	numbers = []
-	for line in os.popen("avahi-browse -at 2>&1 | grep Workstation | grep newfarm").readlines():
-		machine = [ x for x in line.split(' ') if 'newfarm' in x ]
-		if not machine:
-			continue
-		numbers += [ int(''.join([ x for x in machine[0] if x.isdigit() ])) ]
+#	for line in os.popen("avahi-browse -at 2>&1 | grep Workstation | grep newfarm").readlines():
+#		machine = [ x for x in line.split(' ') if 'newfarm' in x ]
+#		if not machine:
+#			continue
+#		numbers += [ int(''.join([ x for x in machine[0] if x.isdigit() ])) ]
 
+	numbers = kankun.keys()
+        print numbers
 	numbers.sort()
 
 	missing = []
