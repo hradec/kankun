@@ -4,24 +4,25 @@ m="
       newfarm-001 104
       newfarm-002 103
       newfarm-003 104
-      newfarm-004 103
+      newfarm-004 106
       newfarm-005 104
       newfarm-006
       newfarm-007 106
       newfarm-008 103
-      newfarm-009 107
+      newfarm-009 106
       newfarm-010 103
       internet 102
       centos 108
+      raid_manjaro 107
 "
 
 name="
 	104 004
-	101 002
+	#101 002
 	106 005
 	103 001
 	107 006
-	105 04b-003
+	#105 003
 	102 007
 	108 008
 "
