@@ -80,7 +80,7 @@ else:
 
      open('/tmp/.kankunOffCount','w').close()
      print int(time.localtime().tm_min), restartCheck
-     if int(time.localtime().tm_min) in restartCheck or 1:
+     if int(time.localtime().tm_min) in restartCheck:
 
 	# use avahi to find what newfarm machines are down
 	numbers = []
