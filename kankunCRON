@@ -2,7 +2,7 @@
 
 
 import os, time, sys
-sys.path.append('/atomo/pipeline/tools/python')
+sys.path.append('/atomo/pipeline/tags/latest/python')
 
 #sys.exit(0)
 
@@ -80,18 +80,16 @@ else:
 
      open('/tmp/.kankunOffCount','w').close()
      print int(time.localtime().tm_min), restartCheck
-     if int(time.localtime().tm_min) in restartCheck:
+     if int(time.localtime().tm_min) in restartCheck or 1:
 
 	# use avahi to find what newfarm machines are down
 	numbers = []
-#	for line in os.popen("avahi-browse -at 2>&1 | grep Workstation | grep newfarm").readlines():
-#		machine = [ x for x in line.split(' ') if 'newfarm' in x ]
-#		if not machine:
-#			continue
-#		numbers += [ int(''.join([ x for x in machine[0] if x.isdigit() ])) ]
+	for line in os.popen("avahi-browse -at 2>&1 | grep Workstation | grep newfarm").readlines():
+		machine = [ x for x in line.split(' ') if 'newfarm' in x ]
+		if not machine:
+			continue
+		numbers += [ int(''.join([ x for x in machine[0] if x.isdigit() ])) ]
 
-	numbers = kankun.keys()
-        print numbers
 	numbers.sort()
 
 	missing = []
@@ -106,6 +104,12 @@ else:
 	for each in missing:
 		kankunToRestart[ kankun[each] ] = 1
 		print 'missing newfarm-%03d' % each
+
+
+	print kankun
+	for each in [ x["name"].replace(".local","").split("-")[-1] for x in pipe.farm.current.engine()._renderNodes("newfarm",state="OFF") ]:
+		kankunToRestart[ kankun[int(each)] ] = 1
+
 
 
 	# restart plugs
