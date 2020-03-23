@@ -34,7 +34,7 @@ name="
 if [ "$1.$2" != "." ] ; then 
 
 ipBase=$(ifconfig $(iwconfig 2>&1 | grep SSID | awk '{print $1}') | grep 'inet ' | awk '{print $2}' | awk -F'.' '{print $1"."$2"."$3}')
-
+ipBase=192.168.10
 
 list(){
 	seq=$(nmap -sn -v $ipBase.0/24 | grep 'Host is up ' -B1 | grep Nmap | awk '{print $(NF)}') 
