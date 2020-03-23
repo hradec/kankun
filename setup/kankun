@@ -2,15 +2,19 @@
 
 m="
       newfarm-001 104
-      newfarm-002 103
+      newfarm-002 
       newfarm-003 104
       newfarm-004 106
       newfarm-005 104
       newfarm-006
       newfarm-007 106
-      newfarm-008 103
-      newfarm-009 106
+      newfarm-008 106
+      newfarm-009 103
       newfarm-010 103
+      newfarm-021 101
+      newfarm-023 101
+      newfarm-029 101
+#      vfxws-025 106
       internet 102
       centos 108
       raid_manjaro 107
