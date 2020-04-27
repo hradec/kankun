@@ -6,12 +6,12 @@ subnet=145
 
 
 startWifi(){
-	sudo netctl start wlp0s26f7u1.static
+	sudo netctl start tomato
 	sudo systemctl start hostapd.service 
 }
 stopWifi(){
 	sudo systemctl stop hostapd.service 
-	sudo netctl stop  wlp0s26f7u1.static
+	sudo netctl stop  tomato
 }
 
 

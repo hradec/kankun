@@ -12,23 +12,28 @@ m="
       newfarm-009 103
       newfarm-010 103
       newfarm-021 101
-      newfarm-023 101
       newfarm-029 101
-#      vfxws-025 106
+      vfxws-025 101
+#      vfxws-013 103
       internet 102
       centos 108
       raid_manjaro 107
+      nexenta 92
+      vfxws-031 105
+      vfxws-033 111
 "
 
 name="
 	104 004
-	#101 002
+	101 002
 	106 005
 	103 001
 	107 006
-	#105 003
+	105 003
 	102 007
 	108 008
+        92  100
+        111 011
 "
 
 
@@ -73,14 +78,14 @@ fi
 #curl "http:/$ip/cgi-bin/relay.cgi?$cmd"
 
 
-if [ "$cmd" != "restart" ] ; then
+#if [ "$cmd" != "restart" ] ; then
         curl "http:/$ip/cgi-bin/relay.cgi?$cmd"  2>/dev/null | egrep -v '<|>|^ |,|^$'
-else
-        curl "http:/$ip/cgi-bin/relay.cgi?off"
-        sleep 20
-        curl "http:/$ip/cgi-bin/relay.cgi?on"
-        curl "http:/$ip/cgi-bin/relay.cgi"
-fi
+#else
+#        curl "http:/$ip/cgi-bin/relay.cgi?off"
+#        sleep 20
+#        curl "http:/$ip/cgi-bin/relay.cgi?on"
+#        curl "http:/$ip/cgi-bin/relay.cgi"
+#fi
 
 else
 

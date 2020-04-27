@@ -10,22 +10,26 @@ if [ -f '/sys/class/leds/i-konke:red:relay/brightness' ] ; then
 fi
 
 case "$QUERY_STRING" in
- state) 
+ state)
    case "`cat $RELAY_CTRL`" in
       0) echo "OFF"
          ;;
-            1) echo "ON"
-               ;;
-                 esac
-                  ;;
-                   on) 
-                     echo 1 > $RELAY_CTRL
-                       echo OK
-                        ;;
-                         off) 
-                           echo 0 > $RELAY_CTRL
-                             echo OK
-                              ;;
-                              esac
-                              
-                              
+      1) echo "ON"
+         ;;
+   esac
+   ;;
+ on)
+   echo 1 > $RELAY_CTRL
+   echo OK
+   ;;
+ off)
+   echo 0 > $RELAY_CTRL
+   echo OK
+   ;;
+ restart)
+   ( echo 0 > $RELAY_CTRL ; sleep 10 ; echo 1 > $RELAY_CTRL ) &
+   echo OK
+   ;;
+esac
+
+
