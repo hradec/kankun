@@ -18,5 +18,5 @@ config wifi-iface
 	option ssid     'OsLindoes2.4Ghz'
 	option mode     'sta'
 	option encryption 'psk'
-	option key      'mosca000'
+	option key      ''
 
