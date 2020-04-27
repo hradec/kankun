@@ -2,8 +2,7 @@
 
 pwd=$(dirname $BASH_SOURCE)
 
-subnet=145
-
+wlan=$(iwconfig 2>&1 | grep SSID | awk '{print $1}')
 
 
 stopWifi(){
@@ -50,11 +49,14 @@ setup(){
 	iwconfig 2>&1 | grep ^w -A 4
 	ifconfig 2>&1 | grep ^w -A7
 
+        # subnet=192.168.145
 	subnet=$(ifconfig | grep ^w -A7 | grep 'inet ' | awk  -F'.' '{print $2}')
 	subnet=$(ifconfig | grep ^w -A7 | grep 'inet ' | awk '{print $2}' | awk  -F'.' '{print $1"."$2"."$3}')
 
+        # use route to figure the kankun complete ip address
+        # subnet=$(route -n | grep $(iwconfig 2>&1 | grep SSID | awk '{print $1}') | grep UG | awk '{print $2}' | grep -v 192.168.1.1)
+
 	echo $subnet
-#        subnet=192.168.145
 	
 	
 	if [ "$subnet" != "" ] ; then
@@ -83,6 +85,9 @@ setup(){
 		#scp -r $pwd/www/* root@192.168.10.253:/www/
 		scp -r $pwd/etc/config/network.$wifi root@$subnet.253:/etc/config/network
 		scp -r $pwd/etc/config/wireless.$wifi root@$subnet.253:/etc/config/wireless
+		ssh root@$subnet.253 sync
+		echo -e "\n\n REDE JA CONFIGURADA! \n\n"
+
 		scp -r $pwd/www/* root@$subnet.253:/www/
 		scp -r $pwd/www_cgi-bin/relay.cgi root@$subnet.253:/www/cgi-bin/
 		scp -r $pwd/usr/sbin/uhttpd root@$subnet.253:/usr/sbin/
@@ -108,11 +113,11 @@ setup(){
 		#ssh root@$subnet.253 opkg install /root/avahi-daemon_0.6.31-6_ar71xx.ipk
 
 		#ssh root@$subnet.253 "sh -c \"echo -e '0 0 * * *  /bin/reboot\n*/15 * * * *  /root/scripts/wifi\n\n' > /etc/crontabs/root ; crontab -l\""
-		#ssh root@$subnet.253 reboot 
+		ssh root@$subnet.253 reboot 
 	else
 		echo -e "\n\nERROR: Cant find 0K_SP3 wifi. Reset a TOMADA! \n\n"
 	fi
-	#sudo netctl stop  wlp0s26f7u1-0K_SP3
+	sudo netctl stop  wlp0s26f7u1-0K_SP3
 }
 
 
@@ -124,11 +129,12 @@ if [ "$1" = "" ] ; then
 	echo "	$(basename $0) -s		seta a tomada pro tomato wifi, com dhcp"
 	echo "	$(basename $0) -t		conecta no tomato wifi"
 	echo "	$(basename $0) -0		conecta no 0K_SP3_v1 wifi"
+	echo "	$(basename $0) -l		list all visible wifi networks"
 	echo "	$(basename $0) 			mostra esse help e lista os wifi visiveis"
 	echo -e '\n\n'
 	echo WIFI disponiveis:
 	startWifi
-	sudo iwlist wlp0s26f7u1 scanning | grep ESS
+	sudo iwlist $wlan scanning | grep ESS
 	echo -e "\n\nWIFI Configs que podemos usar:\n"
 	ls -1 $(dirname $(readlink -f $0))/WIFI.* | sed 's/WIFI.//g' | awk -F'/' '{print "\t"$(NF)}' | while read l ; do
 		echo -e "\t$l"
@@ -139,6 +145,12 @@ else
 		startWifi
 	elif [ "$1" = "-0" ] ; then
 		stopWifi
+		echo .
+		echo "Senha e' p9z34c"
+		echo .
+	elif [ "$1" = "-l" ] ; then
+		startWifi
+		sudo iwlist $wlan scanning | grep ESS
 	else
 		echo .
 		echo "Senha e' p9z34c"
