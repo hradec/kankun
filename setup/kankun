@@ -13,14 +13,16 @@ m="
       newfarm-010 103
       newfarm-021 101
       newfarm-029 101
-      vfxws-025 101
+      vfxws-025 105
+      vfxws-024 105
 #      vfxws-013 103
-      internet 102
+      manjaro 102
       centos 108
       raid_manjaro 107
       nexenta 92
-      vfxws-031 105
+      vfxws-023 101
       vfxws-033 111
+      vfxws-030 109
 "
 
 name="
@@ -34,6 +36,7 @@ name="
 	108 008
         92  100
         111 011
+	109 009
 "
 
 
