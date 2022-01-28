@@ -1,28 +1,28 @@
 #/bin/sh 
 
 m="
-      newfarm-001 104
+      newfarm-001
       newfarm-002 
-      newfarm-003 104
+      newfarm-003 
       newfarm-004 106
       newfarm-005 104
       newfarm-006
       newfarm-007 106
-      newfarm-008 106
+      newfarm-008 
       newfarm-009 103
-      newfarm-010 103
-      newfarm-021 101
-      newfarm-029 101
+      newfarm-010 
+      newfarm-026 101
+      vfxws-029 101
       vfxws-025 105
       vfxws-024 105
-#      vfxws-013 103
+      vfxws-013 109
       manjaro 102
       centos 108
       raid_manjaro 107
       nexenta 92
-      vfxws-023 101
+      newfarm-023 101
       vfxws-033 111
-      vfxws-030 109
+      vfxws-030 110
 "
 
 name="
@@ -37,6 +37,7 @@ name="
         92  100
         111 011
 	109 009
+        110 010
 "
 
 
