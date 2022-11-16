@@ -13,17 +13,17 @@ m="
       vfxws-035 103
       newfarm-010 
       newfarm-026 
-      vfxws-029 104
+      newfarm-029 104
       vfxws-025 105
-      vfxws-024 105
+      vfxws-024(deu_problema) 105
 #      vfxws-013 109
       manjaro 102
       centos 108
       raid_manjaro 107
       nexenta 92
-      sobrando 101
+      reconfigurar 109
       vfxws-033 111
-      vfxws-030 109
+      vfxws-030 101
       queimada 110
 "
 
@@ -76,7 +76,7 @@ list2(){
 	nmap -sn -v $ipBase.0/24 | grep 'Host is up ' -B1 | grep Nmap | awk '{print $(NF)}' > /dev/shm/kankun_nmap &
 	get(){
         	n=$1
-		res=$(timeout 3 kankun $n 2>/dev/null)
+		res=$(timeout 10 kankun $n 2>/dev/null)
 		state="ONLINE "
 		if [ "$res" == "" ] ; then
 			res="  "
@@ -106,6 +106,9 @@ list2(){
 		color=""
 		if   [ "$state" == "ONLINE " ] ; then
 			color=$GREEN_DARK
+			if [ "$res" == "OFF" ] ; then
+				color=$BOLD$BLUE
+			fi
 		elif [ "$state" == "OFFLINE" ] ; then
 			color=$FAIL
 		elif [ "$state" == "       " ] ; then

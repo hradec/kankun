@@ -73,7 +73,7 @@ setup(){
 		export ula=$(echo "$network" | grep ula | awk -F"'" '{print $(NF-1)}' | sed 's/\//\\\//g')
 		echo "...$ula..."
 		#[ "$ula" == "" ] && export ula="fda2:bd0f:a931::/48"
-		[ "$ula" == "" ] && export ula="fdc0:065e:d9b6::/48"
+		#[ "$ula" == "" ] && export ula="fdc0:065e:d9b6::/48"
 		cat $pwd/etc/config/network.template.dhcp | sed "s/20.0.0.100/$ip/" | sed "s/20.0.0.1/$ip/" | sed "s/192.168.10.253/${subnet}.253/" | sed "s/ULA/$ula/" | tee $pwd/etc/config/network.$wifi
 		#sleep 1000
 

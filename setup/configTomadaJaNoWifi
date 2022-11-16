@@ -18,3 +18,10 @@ scp  $CD/etc/dropbear/authorized_keys root@$ip:/etc/dropbear/authorized_keys
 ssh root@$ip mkdir -p /www/cgi-bin/
 scp $CD/www_cgi-bin/relay.cgi root@$ip:/www/cgi-bin/relay.cgi
 ssh root@$ip chmod a+x /www/cgi-bin/relay.cgi
+
+
+scp $CD/usr/sbin/uhttpd root@$ip:/usr/sbin/uhttpd
+
+echo -e "$(ssh root@192.168.1.111 grep -v exit  /etc/rc.local)\n/usr/sbin/uhttpd -f -h /www -r koven -x /cgi-bin -t 60 -T 30 -k 20 -n 3 -N 100 -R -p 0.0.0.0:80 &\nQUERY_STRING=on /www/cgi-bin/relay.cgi\nexit 0" > /tmp/kankun.rc.local
+scp /tmp/kankun.rc.local root@$ip:/etc/rc.local
+ssh root@$ip chmod a+x  /etc/rc.local
