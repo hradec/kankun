@@ -5,14 +5,17 @@
 
 
 ip=$1
+wifi_id=Atomo02
+wifi_pw=atomo2009
+
 wifi="
 config wifi-iface
         option device 'radio0'
         option network 'wwan'
-        option ssid 'Atomo02'
+        option ssid '$wifi_id'
         option mode 'sta'
         option encryption 'psk2'
-        option key 'atomo2009'
+        option key '$wifi_pw'
 "
 
 
@@ -26,5 +29,5 @@ n1=$(echo "$network" | egrep -v 'wan|dhcp|eth1')
 echo -e "$n1\n\nconfig interface 'wwan'\n        option proto 'dhcp'\n\n" | tee /tmp/kankun.network
 
 
-scp /tmp/kankun.wireless root@$ip:/etc/config/wireless
-scp /tmp/kankun.network  root@$ip:/etc/config/network
+#scp /tmp/kankun.wireless root@$ip:/etc/config/wireless
+#scp /tmp/kankun.network  root@$ip:/etc/config/network
