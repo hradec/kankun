@@ -1,0 +1,30 @@
+#!/bin/bash
+#
+# configure the wifi and network on the kankun smartplug
+#
+
+
+ip=$1
+wifi="
+config wifi-iface
+        option device 'radio0'
+        option network 'wwan'
+        option ssid 'Atomo02'
+        option mode 'sta'
+        option encryption 'psk2'
+        option key 'atomo2009'
+"
+
+
+wireless=$(ssh root@$1 cat /etc/config/wireless)
+w1=$(echo "$wireless" | grep wifi-iface -B 100 | grep -v wifi-iface)
+w2=$(echo "$wireless" | grep wifi-iface -A 6 | sed 's/^/#/')
+echo -e "$w1\n\n$w2\n$wifi" | tee /tmp/kankun.wireless
+
+network=$(ssh root@$1 cat /etc/config/network)
+n1=$(echo "$network" | egrep -v 'wan|dhcp|eth1')
+echo -e "$n1\n\nconfig interface 'wwan'\n        option proto 'dhcp'\n\n" | tee /tmp/kankun.network
+
+
+scp /tmp/kankun.wireless root@$ip:/etc/config/wireless
+scp /tmp/kankun.network  root@$ip:/etc/config/network
