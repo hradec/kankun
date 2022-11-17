@@ -36,6 +36,23 @@ stopWifi2(){
 }
 
 
+setup2(){
+	sudo cp 0K_SP3_v1  /etc/netctl/wlp0s26f7u1-0K_SP3
+	sudo netctl start wlp0s26f7u1-0K_SP3 || ( sudo cp 0K_SP3_v2  /etc/netctl/wlp0s26f7u1-0K_SP3 ; sudo netctl start wlp0s26f7u1-0K_SP3 || ( echo "ERROR: No 0K_SP3 wifi found!" ; exit ) )
+	while [ "$ip" == "" ] ; do
+		echo waiting for kankun network...
+		ip=$(ifconfig "$(iwconfig  2>&1 | grep IEE | awk '{print $1}')" | grep inet | awk '{print $2}' | awk -F'.' '{print $1"."$2"."$3".253"}')
+	done
+
+	# connected to 0K_SP3
+	echo .
+        echo "Senha e' p9z34c"
+        echo .
+	$pwd/configTomadaJaNoWifi $ip
+	$pwd/configTomadaWifi $ip
+	ssh root@$ip
+}
+
 setup(){
 	wifi=$2
 	ip=$1
@@ -158,9 +175,11 @@ else
 
 
 		stopWifi
-		setup $1 $2
+#		setup $1 $2
 #		startWifi
+		setup2
 
-		ifconfig 2>&1 | grep ^w -A7
+#		ifconfig 2>&1 | grep ^w -A7
+		startWifi
 	fi
 fi

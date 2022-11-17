@@ -22,6 +22,23 @@ ssh root@$ip chmod a+x /www/cgi-bin/relay.cgi
 
 scp $CD/usr/sbin/uhttpd root@$ip:/usr/sbin/uhttpd
 
-echo -e "$(ssh root@192.168.1.111 grep -v exit  /etc/rc.local)\n/usr/sbin/uhttpd -f -h /www -r koven -x /cgi-bin -t 60 -T 30 -k 20 -n 3 -N 100 -R -p 0.0.0.0:80 &\nQUERY_STRING=on /www/cgi-bin/relay.cgi\nexit 0" > /tmp/kankun.rc.local
+
+rc_local_reference="# Put your custom commands here that should be executed once
+# the system init finished. By default this file does nothing.
+sleep 5
+/sbin/kkeps_on &
+/sbin/kkeps_off &
+/sbin/kkeps_seekwifi &
+/sbin/kkeps_reconect &
+/sbin/psCheck &
+#/sbin/kkeps_test &
+
+/usr/sbin/uhttpd -f -h /www -r koven -x /cgi-bin -t 60 -T 30 -k 20 -n 3 -N 100 -R -p 0.0.0.0:80 &
+QUERY_STRING=on /www/cgi-bin/relay.cgi
+
+exit 0
+"
+
+echo -e "$(ssh root@$ip grep -v exit  /etc/rc.local)\n/usr/sbin/uhttpd -f -h /www -r koven -x /cgi-bin -t 60 -T 30 -k 20 -n 3 -N 100 -R -p 0.0.0.0:80 &\nQUERY_STRING=on /www/cgi-bin/relay.cgi\nexit 0" | tee  /tmp/kankun.rc.local
 scp /tmp/kankun.rc.local root@$ip:/etc/rc.local
 ssh root@$ip chmod a+x  /etc/rc.local
