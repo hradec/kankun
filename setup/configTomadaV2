@@ -48,8 +48,11 @@ setup2(){
 	echo .
         echo "Senha e' p9z34c"
         echo .
+	# config startup, webserver and cgi
 	$pwd/configTomadaJaNoWifi $ip
+	# configure wifi
 	$pwd/configTomadaWifi $ip
+	# finish connected to the plug
 	ssh root@$ip
 }
 
